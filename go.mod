@@ -1,4 +1,4 @@
-module github.com/inkbe/opentracing-sql
+module github.com/jonas-jonas/otel-sql
 
 go 1.21.4
 
