@@ -3,7 +3,7 @@ package sql
 import (
 	"database/sql/driver"
 
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // conn defines a tracing wrapper for driver.Driver.
@@ -13,7 +13,7 @@ type tracingDriver struct {
 }
 
 // TracingDriver creates and returns a new SQL driver with tracing capabilities.
-func NewTracingDriver(d driver.Driver, t opentracing.Tracer, options ...func(*tracingDriver)) driver.Driver {
+func NewTracingDriver(d driver.Driver, t trace.Tracer, options ...func(*tracingDriver)) driver.Driver {
 	td := &tracingDriver{driver: d, tracer: &tracer{t: t}}
 	for _, option := range options {
 		option(td)

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"runtime"
 
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // ErrUnsupported is an error returned when the underlying driver doesn't provide a given function.
@@ -23,21 +23,16 @@ type SpanNameFunc func(context.Context) string
 
 // tracer defines a set of instances for collecting spans.
 type tracer struct {
-	t         opentracing.Tracer
+	t         trace.Tracer
 	nameFunc  SpanNameFunc
 	saveQuery bool
 }
 
 // newSpan creates a new opentracing.Span instance from the given context.
-func (t *tracer) newSpan(ctx context.Context) opentracing.Span {
+func (t *tracer) newSpan(ctx context.Context) (context.Context, trace.Span) {
 	name := t.nameFunc(ctx)
-	var opts []opentracing.StartSpanOption
-	parent := opentracing.SpanFromContext(ctx)
-	if parent != nil {
-		opts = append(opts, opentracing.ChildOf(parent.Context()))
-	}
-	span := t.t.StartSpan(name, opts...)
-	return span
+	var opts []trace.SpanStartOption
+	return t.t.Start(ctx, name, opts...)
 }
 
 // defaultNameFunc defines a default span naming function.

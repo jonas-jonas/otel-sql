@@ -1,8 +1,8 @@
 module github.com/inkbe/opentracing-sql
 
-go 1.13
+go 1.21.4
 
 require (
-	github.com/opentracing/opentracing-go v1.1.0
-	github.com/stretchr/testify v1.4.0 // indirect
+	go.opentelemetry.io/otel v1.21.0
+	go.opentelemetry.io/otel/trace v1.21.0
 )

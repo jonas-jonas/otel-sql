@@ -3,6 +3,8 @@ package sql
 import (
 	"context"
 	"database/sql/driver"
+
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // conn defines a tracing wrapper for driver.Conn.
@@ -36,7 +38,7 @@ func (c *conn) Begin() (driver.Tx, error) {
 
 // BeginTx implements driver.ConnBeginTx BeginTx.
 func (c *conn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
-	s := c.tracer.newSpan(ctx)
+	ctx, s := c.tracer.newSpan(ctx)
 	if connBeginTx, ok := c.conn.(driver.ConnBeginTx); ok {
 		t, err := connBeginTx.BeginTx(ctx, opts)
 		if err != nil {
@@ -69,11 +71,11 @@ func (c *conn) Exec(query string, args []driver.Value) (driver.Result, error) {
 
 // Exec implements driver.StmtExecContext ExecContext.
 func (c *conn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
-	s := c.tracer.newSpan(ctx)
+	ctx, s := c.tracer.newSpan(ctx)
 	if c.tracer.saveQuery {
-		s.SetTag(TagQuery, query)
+		s.SetAttributes(attribute.String(TagQuery, query))
 	}
-	defer s.Finish()
+	defer s.End()
 	if execerContext, ok := c.conn.(driver.ExecerContext); ok {
 		r, err := execerContext.ExecContext(ctx, query, args)
 		return r, err
@@ -88,8 +90,8 @@ func (c *conn) ExecContext(ctx context.Context, query string, args []driver.Name
 // Ping implements driver.Pinger Ping.
 func (c *conn) Ping(ctx context.Context) error {
 	if pinger, ok := c.conn.(driver.Pinger); ok {
-		s := c.tracer.newSpan(ctx)
-		defer s.Finish()
+		ctx, s := c.tracer.newSpan(ctx)
+		defer s.End()
 		return pinger.Ping(ctx)
 	}
 	return ErrUnsupported
@@ -105,11 +107,11 @@ func (c *conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 
 // QueryContext implements Driver.QueryerContext QueryContext.
 func (c *conn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
-	s := c.tracer.newSpan(ctx)
+	ctx, s := c.tracer.newSpan(ctx)
 	if c.tracer.saveQuery {
-		s.SetTag(TagQuery, query)
+		s.SetAttributes(attribute.String(TagQuery, query))
 	}
-	defer s.Finish()
+	defer s.End()
 	if queryerContext, ok := c.conn.(driver.QueryerContext); ok {
 		rows, err := queryerContext.QueryContext(ctx, query, args)
 		return rows, err
