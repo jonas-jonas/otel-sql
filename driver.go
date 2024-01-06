@@ -25,14 +25,14 @@ func NewTracingDriver(d driver.Driver, t trace.Tracer, options ...func(*tracingD
 }
 
 // SpanNameFunction is an option for using a custom span naming function.
-func SpanNameFunction(f SpanNameFunc) func(*tracingDriver) {
+func WithSpanNameFunction(f SpanNameFunc) func(*tracingDriver) {
 	return func(d *tracingDriver) {
 		d.tracer.nameFunc = f
 	}
 }
 
 // SaveQuery is an option for saving SQL queries.
-func SaveQuery(f SpanNameFunc) func(*tracingDriver) {
+func WithSaveQuery() func(*tracingDriver) {
 	return func(d *tracingDriver) {
 		d.tracer.saveQuery = true
 	}
