@@ -1,4 +1,4 @@
-module github.com/jonas-jonas/otelsql
+module github.com/jonas-jonas/otelsql/v2
 
 go 1.21.4
 
