@@ -3,11 +3,26 @@
 This package is an implementation of a SQL driver wrapper with tracing capabilities, compatible with the Open Telemetry (OTEL) API.
 It is a fork of https://github.com/inkbe/opentracing-sql but with changes to use the otel packages instead of opentracing.
 
+## Installation
+
+To use this package, first install it via go get:
+
+```
+go get github.com/jonas-jonas/otelsql/v2
+```
+
 ## Usage
 
 Register a new database driver by passing an instance created by calling `NewTracingDriver``:
 
 ```go
+
+// ...
+import (
+    "github.com/jonas-jonas/otelsql/v2"
+)
+// ...
+
 var driver *sql.Driver
 var tracer otel.Tracer // e.g. otel.Tracer("sql-tracing")
 // init driver, tracer.
