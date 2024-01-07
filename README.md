@@ -1,23 +1,24 @@
-# OpenTracing-compatible SQL driver wrapper for Golang
+# Open Telemetry compatible SQL driver wrapper for Golang
 
-This package is an implementation of a SQL driver wrapper with tracing capabilities, compatible with Opentracing API.
+This package is an implementation of a SQL driver wrapper with tracing capabilities, compatible with the Open Telemetry (OTEL) API.
+It is a fork of https://github.com/inkbe/opentracing-sql but with changes to use the otel packages instead of opentracing.
 
 ## Usage
 
-Register a new database driver by passing an instance created by calling NewTracingDriver:
+Register a new database driver by passing an instance created by calling `NewTracingDriver``:
 
-```
+```go
 var driver *sql.Driver
-var tracer opentracing.Tracer
+var tracer otel.Tracer // e.g. otel.Tracer("sql-tracing")
 // init driver, tracer.
-...
-sql.Register("opentracing-sql", otsql.NewTracingDriver(driver, tracer))
-db, err := sql.Open("opentracing-sql", ...)
+// ...
+sql.Register("otel-sql", otelsql.NewTracingDriver(driver, tracer))
+db, err := sql.Open("otel-sql", ...)
 // use db handle as usual.
 ```
 
-By default, runtime-based naming function will be used, which will set the span name according to the name of the
-function being called (e.g. conn.QueryContext).
+By default, a runtime-based naming function will be used, which will set the span name according to the name of the
+function being called (e.g. `conn.QueryContext`).
 
 It's also possible to specify your own naming function:
 
@@ -25,10 +26,20 @@ It's also possible to specify your own naming function:
 otsql.NewTracingDriver(driver, tracer, otsql.SpanNameFunction(customNameFunction))
 ```
 
-Name function format:
+Example custom naming function:
 
-```
-type SpanNameFunc func(context.Context) string
+```go
+func spanNamingFunc(ctx context.Context) string {
+	pc, _, _, ok := runtime.Caller(3)
+	if !ok {
+		return ""
+	}
+	f := runtime.FuncForPC(pc)
+	if f == nil {
+		return ""
+	}
+	return f.Name()
+}
 ```
 
 Note that only calls to context-aware DB functions will be traced (e.g. db.QueryContext).
@@ -37,10 +48,12 @@ Note that only calls to context-aware DB functions will be traced (e.g. db.Query
 
 There is an existing package https://github.com/ExpansiveWorlds/instrumentedsql which uses the same approach by wrapping
 an existing driver with a tracer, however the current implementation provides the following features:
+
 - Pass custom naming function to name spans according to your needs.
 - Option to enable/disable logging of SQL queries.
 
 The following features from instrumentedsql package are not supported:
+
 - Passing a custom logger.
 - Support of cloud.google.com/go/trace.
 - Don't log exact query args.
@@ -48,8 +61,8 @@ The following features from instrumentedsql package are not supported:
 
 ## Documentation
 
-[GoDoc documentation](https://godoc.org/github.com/inkbe/opentracing-sql)
+[GoDoc documentation](https://godoc.org/github.com/jonas-jonas/otelsql)
 
 ## References
 
-[OpenTracing project](http://opentracing.io)
+[OTEL Go libraries](https://github.com/open-telemetry/opentelemetry-go)
