@@ -1,4 +1,4 @@
-package sql
+package otelsql
 
 import (
 	"database/sql/driver"
