@@ -1,4 +1,4 @@
-module github.com/jonas-jonas/otel-sql
+module github.com/jonas-jonas/otelsql
 
 go 1.21.4
 
